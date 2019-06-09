@@ -1,13 +1,51 @@
+# Webex Meetings XML API sample script, demonstrating the following work flow:
+
+#   AuthenticateUser
+#   CreateMeeting
+#   LstsummaryMeeting
+#   GetMeeting
+#   DelMeeting 
+
+# Install Python 2.7 or 3.7
+# On Windows, choose the option to add to PATH environment variable
+
+# Script Dependencies:
+
+#     lxml
+#     requests
+
+# Dependency Installation (you may need to use `pip3` on Linux or Mac)
+
+#     $ pip install lxml
+
+# Copyright (c) 2019 Cisco and/or its affiliates.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import requests
 import datetime
 from lxml import etree
 
-SITENAME = 'apidemoeu'
-WEBEXID = 'dstaudt'
-PASSWORD = 'Horseface12.'
+# Edit credentials.py to specify your Webex site/user details
+import credentials
 
+# Once the user is authenticated, the sessionTicket for all API requests will be stored here
 sessionSecurityContext = { }
 
+# Custom exception for errors when sending requests
 class SendRequestError(Exception):
 
     def __init__(self, result, reason):
@@ -16,44 +54,54 @@ class SendRequestError(Exception):
 
     pass
 
+# Generic function for sending XML API requests
+#   envelope : the full XML content of the request
+#   debug : (optional) print the XML of the request / response
 def sendRequest( envelope, debug = False ):
 
     if debug:
         print( envelope )
 
+    # Use the requests library to POST the XML envelope to the Webex API endpoint
     headers = { 'Content-Type': 'application/xml'}
     response = requests.post( 'https://api.webex.com/WBXService/XMLService', envelope )
 
+    # Check for HTTP errors
     try: 
         response.raise_for_status()
-    
     except requests.exceptions.HTTPError as err: 
-        raise SendRequestError( 'HTTP ' + response.status_code, response.conent )
+        raise SendRequestError( 'HTTP ' + str(response.status_code), response.content )
 
+    # Use the lxml ElementTree object to parse the response XML
     message = etree.fromstring( response.content )
 
     if debug:
         print( etree.tostring( message, pretty_print = True, encoding = 'unicode' ) )   
 
+    # Use the find() method with an XPath to get the 'result' element's text
+    # Note: {*} is pre-pended to each element name - ignores namespaces
+    # If not SUCCESS...
     if message.find( '{*}header/{*}response/{*}result').text != 'SUCCESS':
 
         result = message.find( '{*}header/{*}response/{*}result').text
         reason = message.find( '{*}header/{*}response/{*}reason').text
 
+        #...raise an exception containing the result and reason element content
         raise SendRequestError( result, reason )
 
     return message
 
 def AuthenticateUser( siteName, webExId, password, debug = False):
 
+    # Use string literal formatting to substitute {variables} into the XML string
     request = '''<?xml version="1.0" encoding="UTF-8"?>
         <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <header>
                 <securityContext>
-                    <siteName>{0}</siteName>
-                    <webExID>{1}</webExID>
-                    <password>{2}</password>  
+                    <siteName>{siteName}</siteName>
+                    <webExID>{webExId}</webExID>
+                    <password>{password}</password>  
                 </securityContext>
             </header>
             <body>
@@ -61,10 +109,12 @@ def AuthenticateUser( siteName, webExId, password, debug = False):
                 </bodyContent>
             </body>
         </serv:message>
-        '''.format( siteName, webExId, password )
+        '''.format( siteName = siteName, webExId = webExId, password = password )
 
+    # Make the API request
     response = sendRequest( request )
 
+    # Return an object containing the security context info with sessionTicket
     return {
             'siteName': siteName,
             'webExId': webExId,
@@ -245,8 +295,9 @@ if __name__ == "__main__":
 
     # AuthenticateUser and get sesssionTicket
     try:
-        sessionSecurityContext = AuthenticateUser( SITENAME, WEBEXID, PASSWORD)
+        sessionSecurityContext = AuthenticateUser( credentials.SITENAME, credentials.WEBEXID, credentials.PASSWORD)
 
+    # If an error occurs, print the error details and exit the script
     except SendRequestError as err:
         print(err)
         raise SystemExit
@@ -256,13 +307,19 @@ if __name__ == "__main__":
     print( sessionSecurityContext[ 'sessionTicket' ] )
     print( )
 
+    # Wait for the uesr to press Enter
     input( 'Press Enter to continue...' )
 
-    # CreateMeeting with some sample settings, with StartDate of 'now'
+    # CreateMeeting - some options will be left out, some hard-coded in the XML
+    # and some can be specified with variables
 
+    # Use the datetime package to create a variable for the meeting time, 'now' plus 60 sec
     timestamp = datetime.datetime.now() + datetime.timedelta(seconds=60) #now + 60 sec
+    # Create a string variable with the timestamp in the specific format required by the API
     strDate =  timestamp.strftime('%m/%d/%Y %H:%M:%S')
 
+    # Meeting type '105' is 'Pro Eval 4x20'
+    # see the LstMeetingType API for types available with your site
     try:
         response = CreateMeeting( sessionSecurityContext,
             meetingPassword = 'C!sco123',
@@ -288,7 +345,7 @@ if __name__ == "__main__":
             maximumNum = 10,
             orderBy = 'STARTTIME',
             orderAD = 'ASC',
-            hostWebExId = WEBEXID,
+            hostWebExId = credentials.WEBEXID,
             startDateStart = datetime.datetime.now().strftime('%m/%d/%Y %H:%M:%S') )
 
     except SendRequestError as err:
