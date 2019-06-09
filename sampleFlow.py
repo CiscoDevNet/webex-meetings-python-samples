@@ -40,7 +40,7 @@ import datetime
 from lxml import etree
 
 # Edit credentials.py to specify your Webex site/user details
-import credentials
+import creds
 
 # Once the user is authenticated, the sessionTicket for all API requests will be stored here
 sessionSecurityContext = { }
