@@ -295,7 +295,7 @@ if __name__ == "__main__":
 
     # AuthenticateUser and get sesssionTicket
     try:
-        sessionSecurityContext = AuthenticateUser( credentials.SITENAME, credentials.WEBEXID, credentials.PASSWORD)
+        sessionSecurityContext = AuthenticateUser( creds.SITENAME, creds.WEBEXID, creds.PASSWORD)
 
     # If an error occurs, print the error details and exit the script
     except SendRequestError as err:
@@ -345,7 +345,7 @@ if __name__ == "__main__":
             maximumNum = 10,
             orderBy = 'STARTTIME',
             orderAD = 'ASC',
-            hostWebExId = credentials.WEBEXID,
+            hostWebExId = creds.WEBEXID,
             startDateStart = datetime.datetime.now().strftime('%m/%d/%Y %H:%M:%S') )
 
     except SendRequestError as err:
