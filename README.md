@@ -8,6 +8,8 @@ https://developer.cisco.com/webex-meetings/
 
 The concepts and techniques shown can be extended to enable automated management of Webex Meetings features
 
+Also included is a Postman collection covering the requests used in the sample.
+
 ## Getting started
 
 * Install Python 2.7 or 3.7
