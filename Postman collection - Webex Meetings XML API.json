@@ -1,0 +1,762 @@
+{
+	"info": {
+		"_postman_id": "cf36258c-cf13-4121-9ee9-6f13be9853de",
+		"name": "Webex Meetings XML API",
+		"description": "An collection of common Webex Meeting XML API requests.\n\nhttps://developer.cisco.com/webex-meetings/\n\nRequests can use Postman environment variables for common values to avoid updating each request manually.  E.g. create a Postman environment with the following variables populated from your Webex site/user:  SITE_NAME, WEBEXID, PASSWORD.  Select this environment as the current active environment, and you can execute individual requests - variable names with double curly braces will be inserted automatically.\n\nThe entire collection can be run sequentially, and as a Postman test suite.  Simply create an environment and populate as above, and use the Postman test runner against the root of the collection.  Dynamic values like sessionTicket and meetingkey will be extracted and used in subsequent requests.\n",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User Service",
+			"item": [
+				{
+					"name": "AuthenticateUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "820bda34-3944-4a4a-a89d-8da62f149c47",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"AuthenticateUser: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"AuthenticateUser: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"AuthenticateUser: SUCCESS\"] = true",
+									"        ",
+									"        pm.environment.set( \"_SESSION_TICKET\", jsonData['serv:message']['serv:body']['serv:bodyContent']['use:sessionTicket'] );",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n        <securityContext>\n          <siteName>{{SITE_NAME}}</siteName>\n          <webExID>{{WEBEXID}}</webExID>\n          <password>{{PASSWORD}}</password>  \n        </securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.user.AuthenticateUser\">\n        </bodyContent>\n    </body>\n</serv:message>\n"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6d549514-a3b4-4704-bede-5e6ea35c6856",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"GetUser: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"GetUser: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"GetUser: SUCCESS\"] = true",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n        <securityContext>\n          <siteName>{{SITE_NAME}}</siteName>\n          <webExID>{{WEBEXID}}</webExID>\n          <sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n        </securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.user.GetUser\">\n        \t<webExId>dstaudt</webExId>\n        </bodyContent>\n    </body>\n</serv:message>\n"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetLoginTicket",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b9b928c9-d6aa-4ef9-9608-2e3e4128e103",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"GetLoginTicket: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"GetLoginTicket: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"GetLoginTicket: SUCCESS\"] = true",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n        <securityContext>\n          <siteName>{{SITE_NAME}}</siteName>\n          <webExID>{{WEBEXID}}</webExID>\n          <sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n        </securityContext>\n    </header>\n    <body>\n        <bodyContent\n            xsi:type=\"java:com.webex.service.binding.user.GetLoginTicket\">\n        </bodyContent>\n    </body>\n</serv:message>\n"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetloginurlUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "842a665a-8826-48e8-9dae-967d2c442e9f",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"GetloginurlUser: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"GetloginurlUser: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"GetloginurlUser: SUCCESS\"] = true",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n        <securityContext>\n          <siteName>{{SITE_NAME}}</siteName>\n          <webExID>{{WEBEXID}}</webExID>\n          <sessionTicket>{{_SESSION_TICKET}}</sessionTicket> \n        </securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.user.GetloginurlUser\">\n        \t<webExID>dstaudt</webExID>\n        </bodyContent>\n    </body>\n</serv:message>\n"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "General Session Service",
+			"item": [
+				{
+					"name": "LstsummarySession",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3de3d412-0e68-443b-bb44-931db47b7fda",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"LstsummarySession: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"LstsummarySession: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"LstsummarySession: SUCCESS\"] = true",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n        <securityContext>\n          <siteName>{{SITE_NAME}}</siteName>\n          <webExID>{{WEBEXID}}</webExID>\n          <sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n        </securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.ep.LstsummarySession\">\n        \t<hostWebExID>{{WEBEXID}}</hostWebExID>\n        </bodyContent>\n    </body>\n</serv:message>\n"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Meeting Type Service",
+			"item": [
+				{
+					"name": "LstMeetingType",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f412bbae-9a61-4245-b49d-bd71143dd555",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"LstMeetingType: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"LstMeetingType: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"LstMeetingType: SUCCESS\"] = true",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n\t\t<securityContext>\n\t\t\t<siteName>{{SITE_NAME}}</siteName>\n\t\t\t<webExID>{{WEBEXID}}</webExID>\n\t\t\t<sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n\t\t</securityContext>\n    </header>\n    <body>\n        <bodyContent\n            xsi:type=\"java:com.webex.service.binding.meetingtype.LstMeetingType\">\n        </bodyContent>\n    </body>\n</serv:message>\n"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Meeting Service",
+			"item": [
+				{
+					"name": "CreateMeeting",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "58342839-1891-4557-bcef-79b1a7869053",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"CreateMeeting: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"CreateMeeting: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"CreateMeeting: SUCCESS\"] = true",
+									"        ",
+									"        pm.environment.set( \"_MEETING_KEY\", jsonData['serv:message']['serv:body']['serv:bodyContent']['meet:meetingkey'] );",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "e5c9d9f2-40f0-42b0-82b4-7945f4d4fa84",
+								"exec": [
+									"var meetingTime = new Date();",
+									"meetingTime.setMinutes( meetingTime.getMinutes() + 5 )",
+									"",
+									"var startDate = ( meetingTime.getMonth() + 1 ) + '/' +",
+									"    meetingTime.getDate() + '/' +",
+									"    meetingTime.getFullYear() +' ' +",
+									"    meetingTime.getHours() + ':' +",
+									"    meetingTime.getMinutes() + ':' +",
+									"    meetingTime.getSeconds()",
+									"",
+									"postman.setEnvironmentVariable(\"_MEETING_START_DATE\", startDate);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n\t\t<securityContext>\n\t\t\t<siteName>{{SITE_NAME}}</siteName>\n\t\t\t<webExID>{{WEBEXID}}</webExID>\n\t\t\t<sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n\t\t</securityContext>\n    </header>\n    <body>\n        <bodyContent\n            xsi:type=\"java:com.webex.service.binding.meeting.CreateMeeting\">\n            <accessControl>\n                <meetingPassword>Cisco1234</meetingPassword>\n            </accessControl>\n            <metaData>\n                <confName>Sample Meeting</confName>\n                <meetingType>105</meetingType>\n                <agenda>Test</agenda>\n            </metaData>\n            <participants>\n                <maxUserNumber>4</maxUserNumber>\n                <attendees>\n                    <attendee>\n                        <person>\n                            <name>John Doe</name>\n                            <email>johndoe@apidemoeu.com</email>\n                        </person>\n                    </attendee>\n                </attendees>\n            </participants>\n            <enableOptions>\n                <chat>true</chat>\n                <poll>true</poll>\n                <audioVideo>true</audioVideo>\n                <supportE2E>TRUE</supportE2E>\n                <autoRecord>TRUE</autoRecord>\n            </enableOptions>\n            <schedule>\n                <startDate>{{_MEETING_START_DATE}}</startDate>\n                <openTime>900</openTime>\n                <joinTeleconfBeforeHost>true</joinTeleconfBeforeHost>\n                <duration>20</duration>\n                <timeZoneID>4</timeZoneID>\n            </schedule>\n            <telephony>\n                <telephonySupport>CALLIN</telephonySupport>\n                <extTelephonyDescription>\n                    Call 1-800-555-1234, Passcode 98765\n                </extTelephonyDescription>\n            </telephony>\n        </bodyContent>\n    </body>\n</serv:message>\n"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LstsummaryMeeting",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3db3d0f9-9767-4db7-916a-1d2f9d8a18df",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"LstsummaryMeeting: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"LstsummaryMeeting: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"LstsummaryMeeting: SUCCESS\"] = true",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n\t\t<securityContext>\n\t\t\t<siteName>{{SITE_NAME}}</siteName>\n\t\t\t<webExID>{{WEBEXID}}</webExID>\n\t\t\t<sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n\t\t</securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.meeting.LstsummaryMeeting\">\n            <listControl>\n                <maximumNum>10</maximumNum>\n                <listMethod>AND</listMethod>\n            </listControl>\n            <order>\n                <orderBy>STARTTIME</orderBy>\n                <orderAD>ASC</orderAD>\n            </order>\n\t\t\t<dateScope>\n\t\t\t\t<startDateStart>06/09/2019 15:51:00</startDateStart>\n\t\t\t</dateScope>\n            <hostWebExID>{{WEBEXID}}</hostWebExID>\n        </bodyContent>\n    </body>\n</serv:message>"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMeeting",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9de34cfe-a266-4424-b76a-2b8c4c81faea",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"GetMeeting: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"GetMeeting: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"GetMeeting: SUCCESS\"] = true",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<serv:message\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\">\n    <header>\n\t\t<securityContext>\n\t\t\t<siteName>{{SITE_NAME}}</siteName>\n\t\t\t<webExID>{{WEBEXID}}</webExID>\n\t\t\t<sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n\t\t</securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.meeting.GetMeeting\">\n            <meetingKey>{{_MEETING_KEY}}</meetingKey>\n        </bodyContent>\n    </body>\n</serv:message>"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LstMeetingAttendee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "533d520d-2649-4b46-8ed5-6087b164d6ba",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"LstMeetingAttendee: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"LstMeetingAttendee: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"LstMeetingAttendee: SUCCESS\"] = true",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n\t\t<securityContext>\n\t\t\t<siteName>{{SITE_NAME}}</siteName>\n\t\t\t<webExID>{{WEBEXID}}</webExID>\n\t\t\t<sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n\t\t</securityContext>\n    </header>\n    <body>\n        <bodyContent\n            xsi:type=\"java:com.webex.service.binding.attendee.LstMeetingAttendee\">\n            <meetingKey>{{_MEETING_KEY}}</meetingKey>\n        </bodyContent>\n    </body>\n</serv:message>\n"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DelMeeting",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "94958e7b-415f-4feb-84ca-33eb566d7a7a",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"DelMeeting: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"DelMeeting: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"DelMeeting: SUCCESS\"] = true",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<serv:message\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\">\n    <header>\n\t\t<securityContext>\n\t\t\t<siteName>{{SITE_NAME}}</siteName>\n\t\t\t<webExID>{{WEBEXID}}</webExID>\n\t\t\t<sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n\t\t</securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.meeting.DelMeeting\">\n            <meetingKey>{{_MEETING_KEY}}</meetingKey>\n        </bodyContent>\n    </body>\n</serv:message>"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Meeting Attendee Service",
+			"item": [
+				{
+					"name": "LstMeetingAttendee",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n\t\t<securityContext>\n\t\t\t<siteName>{{SITE_NAME}}</siteName>\n\t\t\t<webExID>{{WEBEXID}}</webExID>\n\t\t\t<sessionTicket>{{SESSION_TICKET}}</sessionTicket>  \n\t\t</securityContext>\n    </header>\n    <body>\n        <bodyContent\n            xsi:type=\"java:com.webex.service.binding.attendee.LstMeetingAttendee\">\n            <meetingKey>627419473</meetingKey>\n        </bodyContent>\n    </body>\n</serv:message>\n"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "3f7fe00d-0f00-4022-9ab0-c37f33d66a24",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "2fd6d6ba-091e-4f0a-a4de-57af981c5f56",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

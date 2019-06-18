@@ -313,8 +313,8 @@ if __name__ == "__main__":
     # CreateMeeting - some options will be left out, some hard-coded in the XML
     # and some can be specified with variables
 
-    # Use the datetime package to create a variable for the meeting time, 'now' plus 60 sec
-    timestamp = datetime.datetime.now() + datetime.timedelta(seconds=60) #now + 60 sec
+    # Use the datetime package to create a variable for the meeting time, 'now' plus 300 sec
+    timestamp = datetime.datetime.now() + datetime.timedelta(seconds=300)
     # Create a string variable with the timestamp in the specific format required by the API
     strDate =  timestamp.strftime('%m/%d/%Y %H:%M:%S')
 
