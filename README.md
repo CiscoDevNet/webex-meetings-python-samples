@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project contains sample scripts demonstrating usage of the Webex Meetings API, using Python
+This project contains sample scripts demonstrating usage of the Webex Meetings API, using Python.
 
 https://developer.cisco.com/webex-meetings/
 
@@ -22,7 +22,7 @@ Also included is a Postman collection covering the requests used in the sample.
 
 * `oauth2.py` - demonstrates a web application that can perform a Webex Meetings OAuth2 login (using [Authlib](https://github.com/lepture/authlib)), then perform a GetUser request
 
-* `Postman collection - Webex Meetings XML API.json` - import this [Postman collection](https://learning.getpostman.com/docs/postman/collections/intro_to_collections/)] which contains select scripted API request samples
+* `Postman collection - Webex Meetings XML API.json` - import this [Postman collection](https://learning.getpostman.com/docs/postman/collections/intro_to_collections/) which contains select scripted API request samples
 
 ## Webex environments
 
