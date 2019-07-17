@@ -10,6 +10,14 @@ The concepts and techniques shown can be extended to enable automated management
 
 Also included is a Postman collection covering the requests used in the sample.
 
+## Webex environments
+
+* **Full site** - For full admin access and complete features, a production Webex instance is best.  Some samples require site admin credentials
+
+* **Trial site** - The next best thing is to request a [free Webex trial](https://www.webex.com/pricing/free-trial.html) which should provide you admin access and lots of features to try
+
+* **DevNet Webex Sandbox** - For instant/free access, you can create an end-user account in the [DevNet Webex Sandbox](https://devnetsandbox.cisco.com/RM/Diagram/Index/b0547ab9-20cd-4a2d-a817-5c3b76258c83?diagramType=Topology)
+
 ## Getting started
 
 * Install Python 3:
