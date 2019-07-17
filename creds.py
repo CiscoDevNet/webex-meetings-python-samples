@@ -7,7 +7,6 @@ SITENAME = 'CHANGEME'
 PASSWORD = 'CHANGEME'
 
 # Credentials for use with Webex OAuth sites (see oauth2.py)
-SITENAME_OAUTH = 'CHANGEME'
 WEBEXID_OAUTH = 'CHANGEME'  # must include @domain
 CLIENT_ID = 'CHANGEME'
 CLIENT_SECRET = 'CHANGEME'

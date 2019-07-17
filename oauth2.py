@@ -18,6 +18,7 @@
 #   Authlib==0.11
 #   Flask==1.0.2
 #   lxml==4.3.3
+#   furl==2.0.0
 
 # Dependency installation (you may need to use `pip3` on Linux or Mac):
 
@@ -84,10 +85,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from flask import Flask, url_for, redirect, session, make_response
+from flask import Flask, url_for, redirect, session, make_response, request
 from authlib.flask.client import OAuth
 from lxml import etree
 import requests
+from furl import furl
 
 # Edit credentials.py to specify your Webex site/user details
 import creds
@@ -230,7 +232,7 @@ def authorize():
     # Go ahead and exchange the auth code for the access token
     # and store it in the user session object
     try:
-        session['token'] = webex_meetings.authorize_access_token()
+        session[ 'token' ] = webex_meetings.authorize_access_token()
 
     except Exception as err:
 
@@ -239,6 +241,10 @@ def authorize():
         response += '<li>Description: ' + err.description + '</li></ul>'
 
         return response, 500        
+
+    url = furl( request.headers['Referer'] )
+
+    session[ 'siteName' ] = url.query.params[ 'site' ]
 
     # Now that we have the API access token, redirect the the URL for making a
     # Webex Meetings API GetUser request
@@ -252,7 +258,7 @@ def GetUser():
     # access_token from the token object in the session store
     try:
 
-        reply = WebexGetUser( creds.SITENAME_OAUTH, creds.WEBEXID_OAUTH, session[ 'token' ][ 'access_token' ], debug = False )
+        reply = WebexGetUser( session[ 'siteName' ], creds.WEBEXID_OAUTH, session[ 'token' ][ 'access_token' ], debug = False )
 
     except SendRequestError as err:
 

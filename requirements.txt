@@ -1,4 +1,5 @@
-requests==2.21.0
 Authlib==0.11
-Flask==1.0.2
+requests==2.21.0
 lxml==4.3.3
+furl==2.0.0
+Flask==1.0.2
