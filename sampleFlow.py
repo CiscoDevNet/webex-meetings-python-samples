@@ -6,17 +6,37 @@
 #   GetMeeting
 #   DelMeeting 
 
-# Install Python 2.7 or 3.7
-# On Windows, choose the option to add to PATH environment variable
+# Install Python3
+
+#   On Windows, choose the option to add to PATH environment variable
 
 # Script Dependencies:
 
 #     lxml
 #     requests
 
-# Dependency Installation (you may need to use `pip3` on Linux or Mac)
+# Dependency installation (you may need to use `pip3` on Linux or Mac):
 
-#     $ pip install lxml
+#   $ pip3 install -r requirements.txt
+
+# Configuration and setup:
+
+# 1. Edit creds.py and enter SITENAME, WEBEXID and PASSWORD for your Webex user
+
+#    (note, this sample only works with non-SSO/non-OAuth sites;
+#     the WEBEXID would _not_ include a domain name)
+
+# Launching the app with Visual Studio Code:
+
+#   1. Open the repo root folder with VS Code
+
+#   2. Edit creds.py as needed (see above)
+
+#   3. Open the command palette (View/Command Palette), and find 'Python: select interpreter'
+
+#        Select the Python 3 interpreter you want (should be the one associated with the pip used above)
+
+#   3. From the debug pane, select the launch option 'Python: Launch sampleFlow.py'
 
 # Copyright (c) 2019 Cisco and/or its affiliates.
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -70,7 +90,7 @@ def sendRequest( envelope, debug = False ):
     try: 
         response.raise_for_status()
     except requests.exceptions.HTTPError as err: 
-        raise SendRequestError( 'HTTP ' + str(response.status_code), response.content )
+        raise SendRequestError( 'HTTP ' + str(response.status_code), response.content.decode("utf-8") )
 
     # Use the lxml ElementTree object to parse the response XML
     message = etree.fromstring( response.content )
