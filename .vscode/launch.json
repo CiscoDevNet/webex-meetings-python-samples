@@ -1,0 +1,30 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: launch sampleFlow.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/sampleFlow.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: Launch oauth2.py",
+            "type": "python",
+            "request": "launch",
+            "program": "/usr/bin/flask",
+            "console": "integratedTerminal",
+            "env": {
+                "FLASK_APP": "oauth2.py"
+            },
+            "args": [
+                "run",
+                "--cert=cert.pem",
+                "--key=key.pem"
+            ]
+        }
+    ]
+}
