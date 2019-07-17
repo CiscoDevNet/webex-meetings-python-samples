@@ -10,6 +10,20 @@ The concepts and techniques shown can be extended to enable automated management
 
 Also included is a Postman collection covering the requests used in the sample.
 
+## Available samples
+
+* `sampleFlow.py` - demonstrates the following work flow:
+
+    * AuthenticateUser
+    * CreateMeeting
+    * LstsummaryMeeting
+    * GetMeeting
+    * DelMeeting 
+
+* `oauth2.py` - demonstrates a web application that can perform a Webex Meetings OAuth2 login (using [Authlib](https://github.com/lepture/authlib)), then perform a GetUser request
+
+* `Postman collection - Webex Meetings XML API.json` - import this [Postman collection](https://learning.getpostman.com/docs/postman/collections/intro_to_collections/)] which contains select scripted API request samples
+
 ## Webex environments
 
 * **Full site** - For full admin access and complete features, a production Webex instance is best.  Some samples require site admin credentials
@@ -40,17 +54,3 @@ Also included is a Postman collection covering the requests used in the sample.
 * Edit creds.py to specify your Webex credentials
 
 * See the comments in the individual samples for specific setup/launch details
-
-## Available samples
-
-* `sampleFlow.py` - demonstrates the following work flow:
-
-    * AuthenticateUser
-    * CreateMeeting
-    * LstsummaryMeeting
-    * GetMeeting
-    * DelMeeting 
-
-* `oauth2.py` - demonstrates a web application that can perform a Webex Meetings OAuth2 login (using [Authlib](https://github.com/lepture/authlib)), then perform a GetUser request
-
-* `Postman collection - Webex Meetings XML API.json` - import this [Postman collection](https://learning.getpostman.com/docs/postman/collections/intro_to_collections/)] which contains select scripted API request samples
