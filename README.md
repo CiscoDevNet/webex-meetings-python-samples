@@ -45,12 +45,38 @@ Also included is a Postman collection covering the requests used in the sample.
     cd webex-meetings-python-samples
     ```
 
-* Dependency Installation (you may need to use `pip3` on Linux or Mac)
+* (Optional) Create a Python virtual environment named `env`
+
+    (you may need to use `python3` on Linux/Mac):
+
+    ```bash
+    python -m venv env
+    source env/bin/activate
+    ```
+
+* Dependency Installation (you may need to use `pip3` on Linux/Mac)
 
     ```bash
     pip install -r requirements.txt
     ```
-  
-* Edit `creds.py` to specify your Webex credentials
 
-* See the comments in the individual samples for specific setup/launch details
+* Open the project in Visual Studio Code:
+
+    ```bash
+    code .
+    ```
+
+* In VS Code:
+
+    1. Rename `.env.example` to `.env`
+
+        Edit `.env` to specify your Webex credentials
+
+    1. Click on the Debug tag, then the Launch configurations drop-down in the upper left.
+
+        Select the sample you wish to run, e.g. 'Python: Launch sampleFlow.py`
+
+    1. See the comments in the individual samples for additional specific setup/launch details
+
+    1. Click the green Launch button
+

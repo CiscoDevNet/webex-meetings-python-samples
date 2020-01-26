@@ -20,7 +20,7 @@
 #        Be sure to login using the 'Login with Webex Meetings' option.
 #        You will need to login as a Webex site admin to create the integration 
 
-#        Set the Redirect URL to: https://localhost:5000/authorize
+#        Set the Redirect URL to: https://127.0.0.1:5000/authorize
 
 #        Select the read_all and modify_meetings scopes 
 #        (note the actual scope name is meeting_modify)
@@ -29,7 +29,7 @@
 
 #   4. Generate the self-signed certificate used to serve the Flask web app with HTTPS.
 
-#      This requires OpenSSL tools be installed (the command below was used certon Ubuntu 19.04.)
+#      This requires OpenSSL tools be installed (the command below was used on Ubuntu 19.04.)
 
 #      From a terminal at the repo root:  
 
@@ -43,11 +43,11 @@
 
 #   3. Open the command palette (View/Command Palette), and find 'Python: select interpreter'
 
-#        Select the Python 3 interpreter you want (should be the one associated with the pip used above)
+#        Select the Python3 interpreter desired (e.g. the 'venv' environment)
 
-#   3. From the debug pane, select the launch option 'Python: Launch oauth2.py'
+#   3. From the Debug pane, select the launch option 'Python: Launch oauth2.py'
 
-#   4. Open a browser and navigate to:  https://localhost:5000/login
+#   4. Open a browser and navigate to:  https://127.0.0.1:5000/login
 
 #  The application will start the OAuth2 flow, then redirect to the /GetUser URL to display the
 #  target user's Webex Meetings API details in XML format
