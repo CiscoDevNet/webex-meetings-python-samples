@@ -6,7 +6,7 @@ This project contains sample scripts demonstrating usage of the Webex Meetings A
 
 https://developer.cisco.com/webex-meetings/
 
-The concepts and techniques shown can be extended to enable automated management of Webex Meetings features
+The concepts and techniques shown can be extended to enable automated management of Webex Meetings features.
 
 Also included is a Postman collection covering the requests used in the sample.
 
@@ -51,6 +51,6 @@ Also included is a Postman collection covering the requests used in the sample.
     pip install -r requirements.txt
     ```
   
-* Edit creds.py to specify your Webex credentials
+* Edit `creds.py` to specify your Webex credentials
 
 * See the comments in the individual samples for specific setup/launch details

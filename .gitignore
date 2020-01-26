@@ -2,3 +2,5 @@
 !.vscode/launch.json
 __pycache__/
 *.pem
+.env
+env/*

@@ -8,25 +8,9 @@
 #   https://api.webex.com/v1/oauth2/token
 #   GetUser
 
-# Install Python3
-
-#   On Windows, choose the option to add to PATH environment variable
-
-# Script dependencies:
-
-#   requests==2.21.0
-#   Authlib==0.11
-#   Flask==1.0.2
-#   lxml==4.3.3
-#   furl==2.0.0
-
-# Dependency installation (you may need to use `pip3` on Linux or Mac):
-
-#   $ pip3 install -r requirements.txt
-
 # Configuration and setup:
 
-#   1. Edit creds.py with your Webex site name and the target Webex ID (user@email.com)
+#   1. Edit .env with your Webex site name and the target Webex ID (user@email.com)
 
 #   2. Register a Webex OAuth integration per the steps here: 
 
@@ -41,11 +25,11 @@
 #        Select the read_all and modify_meetings scopes 
 #        (note the actual scope name is meeting_modify)
 
-#   3. Place the integration client_id and client_secret values into creds.py
+#   3. Place the integration client_id and client_secret values into .env
 
 #   4. Generate the self-signed certificate used to serve the Flask web app with HTTPS.
 
-#      This requires OpenSSL tools be installed (the command below was used on Ubuntu 19.04.)
+#      This requires OpenSSL tools be installed (the command below was used certon Ubuntu 19.04.)
 
 #      From a terminal at the repo root:  
 
@@ -55,7 +39,7 @@
 
 #   1. Open the repo root folder with VS Code
 
-#   2. Edit creds.py as needed (see above)
+#   2. Edit .env as needed (see above)
 
 #   3. Open the command palette (View/Command Palette), and find 'Python: select interpreter'
 
@@ -86,13 +70,15 @@
 # SOFTWARE.
 
 from flask import Flask, url_for, redirect, session, make_response, request
-from authlib.flask.client import OAuth
+from authlib.integrations.flask_client import OAuth
 from lxml import etree
 import requests
 from furl import furl
+import os
 
-# Edit credentials.py to specify your Webex site/user details
-import creds
+# Edit .env file to specify your Webex integration client ID / secret
+from dotenv import load_dotenv
+load_dotenv()
 
 # Instantiate the Flask application
 app = Flask(__name__)
@@ -120,8 +106,8 @@ def fetch_token():
 webex_meetings = oauth.register(
 
     name = 'webex_meetings',
-    client_id = creds.CLIENT_ID,
-    client_secret = creds.CLIENT_SECRET,
+    client_id = os.getenv( 'CLIENT_ID' ),
+    client_secret = os.getenv( 'CLIENT_SECRET' ),
     access_token_url = 'https://api.webex.com/v1/oauth2/token',
     refresh_token_url = 'https://api.webex.com/v1/oauth2/token',
     authorize_url = 'https://api.webex.com/v1/oauth2/authorize',
@@ -188,7 +174,7 @@ def WebexGetUser( siteName, webExId, webExAccessToken, debug = False):
 
     # Use string literal formatting to substitute {variables} into the XML template string
     # Note using <webExAccessToken> instead of <password>
-    request = '''<?xml version="1.0" encoding="UTF-8"?>
+    request = f'''<?xml version="1.0" encoding="UTF-8"?>
         <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <header>
@@ -204,7 +190,7 @@ def WebexGetUser( siteName, webExId, webExAccessToken, debug = False):
                 </bodyContent>
             </body>
         </serv:message>
-        '''.format( siteName = siteName, webExId = webExId, webExAccessToken = webExAccessToken )
+        '''
 
     # Make the API request
     response = sendWebexRequest( request, debug )
@@ -254,11 +240,14 @@ def authorize():
 @app.route('/GetUser')
 def GetUser():
 
-    # Call the function we created above, grabbing siteName and webExId from creds.py, and the
+    # Call the function we created above, grabbing siteName and webExId from .env, and the
     # access_token from the token object in the session store
     try:
 
-        reply = WebexGetUser( session[ 'siteName' ], creds.WEBEXID_OAUTH, session[ 'token' ][ 'access_token' ], debug = False )
+        reply = WebexGetUser(
+            session[ 'siteName' ],
+            os.getenv( 'WEBEXID_OAUTH' ), 
+            session[ 'token' ][ 'access_token' ], debug = False )
 
     except SendRequestError as err:
 

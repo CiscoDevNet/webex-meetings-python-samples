@@ -6,38 +6,6 @@
 #   GetMeeting
 #   DelMeeting 
 
-# Install Python3
-
-#   On Windows, choose the option to add to PATH environment variable
-
-# Script Dependencies:
-
-#     lxml
-#     requests
-
-# Dependency installation (you may need to use `pip3` on Linux or Mac):
-
-#   $ pip3 install -r requirements.txt
-
-# Configuration and setup:
-
-# 1. Edit creds.py and enter SITENAME, WEBEXID and PASSWORD for your Webex user
-
-#    (note, this sample only works with non-SSO/non-OAuth sites;
-#     the WEBEXID would _not_ include a domain name)
-
-# Launching the app with Visual Studio Code:
-
-#   1. Open the repo root folder with VS Code
-
-#   2. Edit creds.py as needed (see above)
-
-#   3. Open the command palette (View/Command Palette), and find 'Python: select interpreter'
-
-#        Select the Python 3 interpreter you want (should be the one associated with the pip used above)
-
-#   3. From the debug pane, select the launch option 'Python: Launch sampleFlow.py'
-
 # Copyright (c) 2019 Cisco and/or its affiliates.
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -58,9 +26,11 @@
 import requests
 import datetime
 from lxml import etree
+import os
 
-# Edit credentials.py to specify your Webex site/user details
-import creds
+# Edit .env file to specify your Webex site/user details
+from dotenv import load_dotenv
+load_dotenv()
 
 # Once the user is authenticated, the sessionTicket for all API requests will be stored here
 sessionSecurityContext = { }
@@ -114,7 +84,7 @@ def sendRequest( envelope, debug = False ):
 def AuthenticateUser( siteName, webExId, password, debug = False):
 
     # Use string literal formatting to substitute {variables} into the XML string
-    request = '''<?xml version="1.0" encoding="UTF-8"?>
+    request = f'''<?xml version="1.0" encoding="UTF-8"?>
         <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <header>
@@ -128,8 +98,7 @@ def AuthenticateUser( siteName, webExId, password, debug = False):
                 <bodyContent xsi:type="java:com.webex.service.binding.user.AuthenticateUser">
                 </bodyContent>
             </body>
-        </serv:message>
-        '''.format( siteName = siteName, webExId = webExId, password = password )
+        </serv:message>'''
 
     # Make the API request
     response = sendRequest( request )
@@ -149,14 +118,14 @@ def CreateMeeting( sessionSecurityContext,
                    startDate,
                    debug = False ):
 
-    request = '''<?xml version="1.0" encoding="UTF-8"?>
+    request = f'''<?xml version="1.0" encoding="UTF-8"?>
         <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <header>
                 <securityContext>
-                    <siteName>{siteName}</siteName>
-                    <webExID>{webExId}</webExID>
-                    <sessionTicket>{sessionTicket}</sessionTicket>  
+                    <siteName>{sessionSecurityContext["siteName"]}</siteName>
+                    <webExID>{sessionSecurityContext["webExId"]}</webExID>
+                    <sessionTicket>{sessionSecurityContext["sessionTicket"]}</sessionTicket>  
                 </securityContext>
             </header>
             <body>
@@ -192,15 +161,7 @@ def CreateMeeting( sessionSecurityContext,
                     </telephony>
                 </bodyContent>
             </body>
-        </serv:message>
-        '''.format( siteName = sessionSecurityContext['siteName'],
-                    webExId = sessionSecurityContext['webExId'],
-                    sessionTicket = sessionSecurityContext['sessionTicket'],
-                    meetingPassword = meetingPassword,
-                    confName = confName,
-                    meetingType = meetingType,
-                    agenda = agenda,
-                    startDate = startDate )
+        </serv:message>'''
 
     response = sendRequest( request, debug = False )
 
@@ -214,14 +175,14 @@ def LstsummaryMeeting( sessionSecurityContext,
     startDateStart,
     debug = False ):
 
-    request = '''<?xml version="1.0" encoding="UTF-8"?>
+    request = f'''<?xml version="1.0" encoding="UTF-8"?>
         <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <header>
                 <securityContext>
-                    <siteName>{siteName}</siteName>
-                    <webExID>{webExId}</webExID>
-                    <sessionTicket>{sessionTicket}</sessionTicket>  
+                    <siteName>{sessionSecurityContext["siteName"]}</siteName>
+                    <webExID>{sessionSecurityContext["webExId"]}</webExID>
+                    <sessionTicket>{sessionSecurityContext["sessionTicket"]}</sessionTicket>  
                 </securityContext>
             </header>
             <body>
@@ -241,15 +202,7 @@ def LstsummaryMeeting( sessionSecurityContext,
                     <hostWebExID>{hostWebExId}</hostWebExID>
                 </bodyContent>
             </body>
-        </serv:message>
-        '''.format( siteName = sessionSecurityContext['siteName'],
-            webExId = sessionSecurityContext['webExId'],
-            sessionTicket = sessionSecurityContext['sessionTicket'],
-            maximumNum = maximumNum,
-            orderBy = orderBy,
-            orderAD = orderAD,
-            hostWebExId = hostWebExId,
-            startDateStart = startDateStart )
+        </serv:message>'''
 
     response = sendRequest( request, debug = False )
 
@@ -257,15 +210,15 @@ def LstsummaryMeeting( sessionSecurityContext,
 
 def GetMeeting( sessionSecurityContext, meetingKey, debug = False ):
 
-    request = '''<?xml version="1.0" encoding="ISO-8859-1"?>
+    request = f'''<?xml version="1.0" encoding="ISO-8859-1"?>
         <serv:message
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns:serv="http://www.webex.com/schemas/2002/06/service">
             <header>
                 <securityContext>
-                    <siteName>{siteName}</siteName>
-                    <webExID>{webExId}</webExID>
-                    <sessionTicket>{sessionTicket}</sessionTicket>
+                    <siteName>{sessionSecurityContext["siteName"]}</siteName>
+                    <webExID>{sessionSecurityContext["webExId"]}</webExID>
+                    <sessionTicket>{sessionSecurityContext["sessionTicket"]}</sessionTicket>  
                 </securityContext>
             </header>
             <body>
@@ -273,11 +226,7 @@ def GetMeeting( sessionSecurityContext, meetingKey, debug = False ):
                     <meetingKey>{meetingKey}</meetingKey>
                 </bodyContent>
             </body>
-        </serv:message>
-        '''.format( siteName = sessionSecurityContext['siteName'],
-            webExId = sessionSecurityContext['webExId'],
-            sessionTicket = sessionSecurityContext['sessionTicket'],
-            meetingKey = meetingKey )
+        </serv:message>'''
 
     response = sendRequest( request, debug = False )
 
@@ -285,15 +234,15 @@ def GetMeeting( sessionSecurityContext, meetingKey, debug = False ):
 
 def DelMeeting( sessionSecurityContext, meetingKey, debug = False ):
 
-    request = '''<?xml version="1.0" encoding="ISO-8859-1"?>
+    request = f'''<?xml version="1.0" encoding="ISO-8859-1"?>
         <serv:message
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns:serv="http://www.webex.com/schemas/2002/06/service">
             <header>
                 <securityContext>
-                    <siteName>{siteName}</siteName>
-                    <webExID>{webExId}</webExID>
-                    <sessionTicket>{sessionTicket}</sessionTicket>
+                    <siteName>{sessionSecurityContext["siteName"]}</siteName>
+                    <webExID>{sessionSecurityContext["webExId"]}</webExID>
+                    <sessionTicket>{sessionSecurityContext["sessionTicket"]}</sessionTicket>  
                 </securityContext>
             </header>
             <body>
@@ -301,11 +250,7 @@ def DelMeeting( sessionSecurityContext, meetingKey, debug = False ):
                 <meetingKey>{meetingKey}</meetingKey>
             </bodyContent>
             </body>
-        </serv:message>
-        '''.format( siteName = sessionSecurityContext['siteName'],
-            webExId = sessionSecurityContext['webExId'],
-            sessionTicket = sessionSecurityContext['sessionTicket'],
-            meetingKey = meetingKey )
+        </serv:message>'''
 
     response = sendRequest( request, debug = False )
 
@@ -315,7 +260,11 @@ if __name__ == "__main__":
 
     # AuthenticateUser and get sesssionTicket
     try:
-        sessionSecurityContext = AuthenticateUser( creds.SITENAME, creds.WEBEXID, creds.PASSWORD)
+        sessionSecurityContext = AuthenticateUser(
+            os.getenv( 'SITENAME'),
+            os.getenv( 'WEBEXID'),
+            os.getenv( 'PASSWORD')
+        )
 
     # If an error occurs, print the error details and exit the script
     except SendRequestError as err:
@@ -334,9 +283,9 @@ if __name__ == "__main__":
     # and some can be specified with variables
 
     # Use the datetime package to create a variable for the meeting time, 'now' plus 300 sec
-    timestamp = datetime.datetime.now() + datetime.timedelta(seconds=300)
+    timestamp = datetime.datetime.now() + datetime.timedelta( seconds = 300 )
     # Create a string variable with the timestamp in the specific format required by the API
-    strDate =  timestamp.strftime('%m/%d/%Y %H:%M:%S')
+    strDate =  timestamp.strftime( '%m/%d/%Y %H:%M:%S' )
 
     # Meeting type '105' is 'Pro Eval 4x20'
     # see the LstMeetingType API for types available with your site
@@ -365,7 +314,7 @@ if __name__ == "__main__":
             maximumNum = 10,
             orderBy = 'STARTTIME',
             orderAD = 'ASC',
-            hostWebExId = creds.WEBEXID,
+            hostWebExId = os.getenv('WEBEXID'),
             startDateStart = datetime.datetime.now().strftime('%m/%d/%Y %H:%M:%S') )
 
     except SendRequestError as err:
@@ -413,4 +362,4 @@ if __name__ == "__main__":
         raise SystemError    
 
     print( )
-    print( 'Next Meeting Delete: SUCCESS:', '\n')
+    print( 'Next Meeting Delete: SUCCESS', '\n')

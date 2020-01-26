@@ -15,7 +15,7 @@
             "name": "Python: Launch oauth2.py",
             "type": "python",
             "request": "launch",
-            "program": "/usr/bin/flask",
+            "module": "flask",
             "console": "integratedTerminal",
             "env": {
                 "FLASK_APP": "oauth2.py"
