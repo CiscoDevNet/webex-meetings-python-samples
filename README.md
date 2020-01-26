@@ -10,6 +10,8 @@ The concepts and techniques shown can be extended to enable automated management
 
 Also included is a Postman collection covering the requests used in the sample.
 
+Samples built/tested using [Visual Studio Code](https://code.visualstudio.com/).
+
 ## Available samples
 
 * `sampleFlow.py` - demonstrates the following work flow:
@@ -45,7 +47,7 @@ Also included is a Postman collection covering the requests used in the sample.
     cd webex-meetings-python-samples
     ```
 
-* (Optional) Create a Python virtual environment named `env`
+* (Optional) Create a Python virtual environment named `env`:
 
     (you may need to use `python3` on Linux/Mac):
 
@@ -72,7 +74,7 @@ Also included is a Postman collection covering the requests used in the sample.
 
         Edit `.env` to specify your Webex credentials
 
-    1. Click on the Debug tag, then the Launch configurations drop-down in the upper left.
+    1. Click on the Debug tab, then the Launch configurations drop-down in the upper left.
 
         Select the sample you wish to run, e.g. 'Python: Launch sampleFlow.py`
 
