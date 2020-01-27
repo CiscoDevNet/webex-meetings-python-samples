@@ -17,10 +17,13 @@ Samples built/tested using [Visual Studio Code](https://code.visualstudio.com/).
 * `sampleFlow.py` - demonstrates the following work flow:
 
     * AuthenticateUser
+    * GetUser
     * CreateMeeting
     * LstsummaryMeeting
     * GetMeeting
     * DelMeeting 
+
+    Can use webExId/password or webExId/accessToken for authorization
 
 * `oauth2.py` - demonstrates a web application that can perform a Webex Meetings OAuth2 login (using [Authlib](https://github.com/lepture/authlib)), then perform a GetUser request
 
@@ -32,7 +35,7 @@ Samples built/tested using [Visual Studio Code](https://code.visualstudio.com/).
 
 * **Trial site** - The next best thing is to request a [free Webex trial](https://www.webex.com/pricing/free-trial.html) which should provide you admin access and lots of features to try
 
-* **DevNet Webex Sandbox** - For instant/free access, you can create an end-user account in the [DevNet Webex Sandbox](https://devnetsandbox.cisco.com/RM/Diagram/Index/b0547ab9-20cd-4a2d-a817-5c3b76258c83?diagramType=Topology)
+* **DevNet Webex Sandbox** - For instant/free access, you can create an end-user account in the [DevNet Webex Sandbox](https://devnetsandbox.cisco.com/RM/Diagram/Index/b0547ab9-20cd-4a2d-a817-5c3b76258c83?diagramType=Topology).  Note, this instance is non-SSO/CI, and uses username/password authentication
 
 ## Getting started
 
@@ -78,7 +81,7 @@ Samples built/tested using [Visual Studio Code](https://code.visualstudio.com/).
 
         Select the sample you wish to run, e.g. 'Python: Launch sampleFlow.py`
 
-    1. See the comments in the individual samples for additional specific setup/launch details
+    1. See the comments in the individual samples for additional sample-specific setup/launch details
 
     1. Click the green Launch button
 

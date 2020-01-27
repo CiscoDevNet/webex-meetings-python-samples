@@ -1,10 +1,21 @@
 # Webex Meetings XML API sample script, demonstrating the following work flow:
 
 #   AuthenticateUser
+#   GetUser
 #   CreateMeeting
 #   LstsummaryMeeting
 #   GetMeeting
 #   DelMeeting 
+
+# Configuration and setup:
+
+# * Edit .env to provide your Webex user credentials
+
+#   - For SSO/CI sites, provide the ACCESS_TOKEN (retrieve by logging in here: 
+#       https://developer.webex.com/docs/api/getting-started)
+#   - For non-SSO/CI sites, provide the PASSWORD
+
+#   If both are provided, the sample will attempt to use the ACCESS_TOKEN
 
 # Copyright (c) 2019 Cisco and/or its affiliates.
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,6 +43,9 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+# Change to true to enable request/response debug output
+DEBUG = True
+
 # Once the user is authenticated, the sessionTicket for all API requests will be stored here
 sessionSecurityContext = { }
 
@@ -46,10 +60,9 @@ class SendRequestError(Exception):
 
 # Generic function for sending XML API requests
 #   envelope : the full XML content of the request
-#   debug : (optional) print the XML of the request / response
-def sendRequest( envelope, debug = False ):
+def sendRequest( envelope ):
 
-    if debug:
+    if DEBUG:
         print( envelope )
 
     # Use the requests library to POST the XML envelope to the Webex API endpoint
@@ -65,7 +78,7 @@ def sendRequest( envelope, debug = False ):
     # Use the lxml ElementTree object to parse the response XML
     message = etree.fromstring( response.content )
 
-    if debug:
+    if DEBUG:
         print( etree.tostring( message, pretty_print = True, encoding = 'unicode' ) )   
 
     # Use the find() method with an XPath to get the 'result' element's text
@@ -81,24 +94,41 @@ def sendRequest( envelope, debug = False ):
 
     return message
 
-def AuthenticateUser( siteName, webExId, password, debug = False):
+def AuthenticateUser( siteName, webExId, password, accessToken ):
 
-    # Use string literal formatting to substitute {variables} into the XML string
-    request = f'''<?xml version="1.0" encoding="UTF-8"?>
-        <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <header>
-                <securityContext>
-                    <siteName>{siteName}</siteName>
-                    <webExID>{webExId}</webExID>
-                    <password>{password}</password>  
-                </securityContext>
-            </header>
-            <body>
-                <bodyContent xsi:type="java:com.webex.service.binding.user.AuthenticateUser">
-                </bodyContent>
-            </body>
-        </serv:message>'''
+    # If an access token is provided in .env, we'll use this form
+    if ( accessToken ):
+        request = f'''<?xml version="1.0" encoding="UTF-8"?>
+            <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <header>
+                    <securityContext>
+                        <siteName>{siteName}</siteName>
+                        <webExID>{webExId}</webExID>
+                    </securityContext>
+                </header>
+                <body>
+                    <bodyContent xsi:type="java:com.webex.service.binding.user.AuthenticateUser">
+                        <accessToken>{accessToken}</accessToken>
+                    </bodyContent>
+                </body>
+            </serv:message>'''
+    else:
+        # If no access token, assume a password was provided, using this form
+        request = f'''<?xml version="1.0" encoding="UTF-8"?>
+            <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <header>
+                    <securityContext>
+                        <siteName>{siteName}</siteName>
+                        <webExID>{webExId}</webExID>
+                        <password>{password}</password>
+                    </securityContext>
+                </header>
+                <body>
+                    <bodyContent xsi:type="java:com.webex.service.binding.user.AuthenticateUser"/>
+                </body>
+            </serv:message>'''
 
     # Make the API request
     response = sendRequest( request )
@@ -110,13 +140,37 @@ def AuthenticateUser( siteName, webExId, password, debug = False):
             'sessionTicket': response.find( '{*}body/{*}bodyContent/{*}sessionTicket' ).text
             }
 
+def GetUser( sessionSecurityContext ):
+
+    request = f'''<?xml version="1.0" encoding="UTF-8"?>
+        <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <header>
+                <securityContext>
+                    <siteName>{sessionSecurityContext[ 'siteName' ]}</siteName>
+                    <webExID>{sessionSecurityContext[ 'webExId' ]}</webExID>
+                    <sessionTicket>{sessionSecurityContext[ 'sessionTicket' ]}</sessionTicket>
+                </securityContext>
+            </header>
+            <body>
+                <bodyContent xsi:type="java:com.webex.service.binding.user.GetUser">
+                    <webExId>{sessionSecurityContext[ 'webExId' ]}</webExId>
+                </bodyContent>
+            </body>
+        </serv:message>'''
+
+    # Make the API request
+    response = sendRequest( request )
+
+    # Return an object containing the response
+    return response
+    
 def CreateMeeting( sessionSecurityContext,
                    meetingPassword,
                    confName,
                    meetingType,
                    agenda,
-                   startDate,
-                   debug = False ):
+                   startDate ):
 
     request = f'''<?xml version="1.0" encoding="UTF-8"?>
         <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
@@ -149,7 +203,7 @@ def CreateMeeting( sessionSecurityContext,
                     <schedule>
                         <startDate>{startDate}</startDate>
                         <openTime>900</openTime>
-                        <joinTeleconfBeforeHost>true</joinTeleconfBeforeHost>
+                        <joinTeleconfBeforeHost>false</joinTeleconfBeforeHost>
                         <duration>20</duration>
                         <timeZoneID>4</timeZoneID>
                     </schedule>
@@ -163,7 +217,7 @@ def CreateMeeting( sessionSecurityContext,
             </body>
         </serv:message>'''
 
-    response = sendRequest( request, debug = False )
+    response = sendRequest( request )
 
     return response
 
@@ -172,8 +226,7 @@ def LstsummaryMeeting( sessionSecurityContext,
     orderBy,
     orderAD,
     hostWebExId,
-    startDateStart,
-    debug = False ):
+    startDateStart ):
 
     request = f'''<?xml version="1.0" encoding="UTF-8"?>
         <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
@@ -204,11 +257,11 @@ def LstsummaryMeeting( sessionSecurityContext,
             </body>
         </serv:message>'''
 
-    response = sendRequest( request, debug = False )
+    response = sendRequest( request )
 
     return response
 
-def GetMeeting( sessionSecurityContext, meetingKey, debug = False ):
+def GetMeeting( sessionSecurityContext, meetingKey ):
 
     request = f'''<?xml version="1.0" encoding="ISO-8859-1"?>
         <serv:message
@@ -228,11 +281,11 @@ def GetMeeting( sessionSecurityContext, meetingKey, debug = False ):
             </body>
         </serv:message>'''
 
-    response = sendRequest( request, debug = False )
+    response = sendRequest( request )
 
     return response
 
-def DelMeeting( sessionSecurityContext, meetingKey, debug = False ):
+def DelMeeting( sessionSecurityContext, meetingKey ):
 
     request = f'''<?xml version="1.0" encoding="ISO-8859-1"?>
         <serv:message
@@ -252,7 +305,7 @@ def DelMeeting( sessionSecurityContext, meetingKey, debug = False ):
             </body>
         </serv:message>'''
 
-    response = sendRequest( request, debug = False )
+    response = sendRequest( request )
 
     return response
 
@@ -263,7 +316,8 @@ if __name__ == "__main__":
         sessionSecurityContext = AuthenticateUser(
             os.getenv( 'SITENAME'),
             os.getenv( 'WEBEXID'),
-            os.getenv( 'PASSWORD')
+            os.getenv( 'PASSWORD'),
+            os.getenv( 'ACCESS_TOKEN' )
         )
 
     # If an error occurs, print the error details and exit the script
@@ -279,21 +333,38 @@ if __name__ == "__main__":
     # Wait for the uesr to press Enter
     input( 'Press Enter to continue...' )
 
+    # GetSite - this will allow us to determine which meeting types are
+    # supported by the user's site.  Then we'll parse/save the first type.
+
+    try:
+        response = GetUser( sessionSecurityContext )
+
+    except SendRequestError as err:
+        print(err)
+        raise SystemExit
+
+    meetingType = response.find( '{*}body/{*}bodyContent/{*}meetingTypes')[ 0 ].text
+    
+    print( )
+    print( f'First meetingType available: {meetingType}' )
+    print( )
+
+    input( 'Press Enter to continue...' )
+
     # CreateMeeting - some options will be left out, some hard-coded in the XML
     # and some can be specified with variables
 
     # Use the datetime package to create a variable for the meeting time, 'now' plus 300 sec
     timestamp = datetime.datetime.now() + datetime.timedelta( seconds = 300 )
+
     # Create a string variable with the timestamp in the specific format required by the API
     strDate =  timestamp.strftime( '%m/%d/%Y %H:%M:%S' )
 
-    # Meeting type '105' is 'Pro Eval 4x20'
-    # see the LstMeetingType API for types available with your site
     try:
         response = CreateMeeting( sessionSecurityContext,
             meetingPassword = 'C!sco123',
             confName = 'Test Meeting',
-            meetingType = '105',
+            meetingType = meetingType,
             agenda = 'Test meeting creation',
             startDate = strDate )
 

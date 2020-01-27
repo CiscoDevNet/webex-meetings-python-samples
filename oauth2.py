@@ -12,18 +12,13 @@
 
 #   1. Edit .env with your Webex site name and the target Webex ID (user@email.com)
 
-#   2. Register a Webex OAuth integration per the steps here: 
+#   2. Register a Webex Teams OAuth integration per the steps here: 
 
-#        https://developer.cisco.com/docs/webex-meetings/#!integration
-#        https://developer.cisco.com/site/webex-integration/
+#        https://developer.webex.com/docs/integrations
   
-#        Be sure to login using the 'Login with Webex Meetings' option.
-#        You will need to login as a Webex site admin to create the integration 
-
 #        Set the Redirect URL to: https://127.0.0.1:5000/authorize
 
-#        Select the read_all and modify_meetings scopes 
-#        (note the actual scope name is meeting_modify)
+#        Select the 'spark:all' scope
 
 #   3. Place the integration client_id and client_secret values into .env
 
@@ -43,11 +38,11 @@
 
 #   3. Open the command palette (View/Command Palette), and find 'Python: select interpreter'
 
-#        Select the Python3 interpreter desired (e.g. the 'venv' environment)
+#        Select the Python3 interpreter desired (e.g. a 'venv' environment)
 
 #   3. From the Debug pane, select the launch option 'Python: Launch oauth2.py'
 
-#   4. Open a browser and navigate to:  https://127.0.0.1:5000/login
+#   4. Open a browser and navigate to:  https://127.0.0.1:5000
 
 #  The application will start the OAuth2 flow, then redirect to the /GetUser URL to display the
 #  target user's Webex Meetings API details in XML format
@@ -74,11 +69,15 @@ from authlib.integrations.flask_client import OAuth
 from lxml import etree
 import requests
 from furl import furl
+import json
 import os
 
 # Edit .env file to specify your Webex integration client ID / secret
 from dotenv import load_dotenv
 load_dotenv()
+
+# Change to true to enable request/response debug output
+DEBUG = False
 
 # Instantiate the Flask application
 app = Flask(__name__)
@@ -87,36 +86,54 @@ app = Flask(__name__)
 # you might want to make this more secret
 app.secret_key = "CHANGEME"
 
-# Create an Authlib OAuth object to handle OAuth2 authentication
+# Create an Authlib registry object to handle OAuth2 authentication
 oauth = OAuth(app)
 
 # This simple function returns the authentication token object stored in the Flask
 # user session data store
-# It is used by the webex_meetings RemoteApp object below to retrieve the access token when
+# It is used by the webex RemoteApp object below to retrieve the access token when
 # making API requests on the session user's behalf
 def fetch_token():
 
     return session[ 'token' ]
 
+# Webex returns no 'token_type' in its /authorize response.
+# This authlib compliance fix adds its as 'bearer'
+def webex_compliance_fix( session ):
+
+    def _fix( resp ):
+
+        token = resp.json()
+
+        token[ 'token_type' ] = 'bearer'
+
+        resp._content = json.dumps( token ).encode( 'utf-8' )
+
+        return resp
+
+    session.register_compliance_hook('access_token_response', _fix)
+
 # Register a RemoteApplication for the Webex Meetings XML API and OAuth2 service
 # The code_challenge_method will cause it to use the PKCE mechanism with SHA256
-# The client_kwargs sets the requested Webex Meetings integration scopes (may need to adjust)
+# The client_kwargs sets the requested Webex Meetings integration scope
 # and the token_endpoint_auth_method to use when exchanging the auth code for the
 # access token
-webex_meetings = oauth.register(
+oauth.register(
 
-    name = 'webex_meetings',
+    name = 'webex',
     client_id = os.getenv( 'CLIENT_ID' ),
     client_secret = os.getenv( 'CLIENT_SECRET' ),
-    access_token_url = 'https://api.webex.com/v1/oauth2/token',
-    refresh_token_url = 'https://api.webex.com/v1/oauth2/token',
-    authorize_url = 'https://api.webex.com/v1/oauth2/authorize',
+    authorize_url = 'https://api.ciscospark.com/v1/authorize',
+    access_token_url = 'https://api.ciscospark.com/v1/access_token',
+    refresh_token_url = 'https://api.ciscospark.com/v1/authorize',
     api_base_url = 'https://api.webex.com/WBXService/XMLService',
-    client_kwargs = { 'scope': 'all_read meeting_modify',
+    client_kwargs = { 
+        'scope': 'spark:all',
         'token_endpoint_auth_method': 'client_secret_post' 
-        },
+    },
     code_challenge_method = 'S256',
-    fetch_token=fetch_token
+    fetch_token = fetch_token,
+    compliance_fix=webex_compliance_fix
 )
 
 # The following section handles the Webex Meetings XML API calls
@@ -133,15 +150,16 @@ class SendRequestError(Exception):
 # Generic function for sending Meetings XML API requests
 #   envelope : the full XML content of the request
 #   debug : (optional) print the XML of the request / response
-def sendWebexRequest( envelope, debug = False ):
-
-    if debug:
-        print( envelope )
+def sendRequest( envelope, debug = False ):
 
     # Use the webex_meetings RemoteApplication object to POST the XML envelope to the Meetings API endpoint
     # Note, this object is based on the Python requests library object and can accept similar kwargs
     headers = { 'Content-Type': 'application/xml'}
-    response = webex_meetings.post( url = '', data = envelope, headers = headers )
+    response = oauth.webex.post( url = '', data = envelope, headers = headers )
+
+    if debug:
+        print( response.request.headers )
+        print( response.request.body )
 
     # Check for HTTP errors, if we got something besides a 200 OK
     try: 
@@ -154,10 +172,11 @@ def sendWebexRequest( envelope, debug = False ):
 
     # If debug mode has been requested, pretty print the XML to console
     if debug:
+        print( response.headers )
         print( etree.tostring( message, pretty_print = True, encoding = 'unicode' ) )   
 
-    # Use the find() method with an XPath to get the 'result' element's text
-    # Note: {*} is pre-pended to each element name - ignores namespaces
+    # Use the find() method with an XPath to get the <result> element's text
+    # Note: {*} is pre-pended to each element name - matches any namespace.
     # If not SUCCESS...
     if message.find( '{*}header/{*}response/{*}result').text != 'SUCCESS':
 
@@ -170,10 +189,9 @@ def sendWebexRequest( envelope, debug = False ):
     # Return the XML message
     return message
 
-def WebexGetUser( siteName, webExId, webExAccessToken, debug = False):
+def WebexAuthenticateUser( siteName, webExId, accessToken ):
 
-    # Use string literal formatting to substitute {variables} into the XML template string
-    # Note using <webExAccessToken> instead of <password>
+    # Use f-string literal formatting to substitute {variables} into the XML string
     request = f'''<?xml version="1.0" encoding="UTF-8"?>
         <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -181,7 +199,36 @@ def WebexGetUser( siteName, webExId, webExAccessToken, debug = False):
                 <securityContext>
                     <siteName>{siteName}</siteName>
                     <webExID>{webExId}</webExID>
-                    <webExAccessToken>{webExAccessToken}</webExAccessToken>  
+                </securityContext>
+            </header>
+            <body>
+                <bodyContent xsi:type="java:com.webex.service.binding.user.AuthenticateUser">
+                    <accessToken>{accessToken}</accessToken>
+                </bodyContent>
+            </body>
+        </serv:message>'''
+
+    # Make the API request
+    response = sendRequest( request )
+
+    # Return an object containing the security context info with sessionTicket
+    return {
+            'siteName': siteName,
+            'webExId': webExId,
+            'sessionTicket': response.find( '{*}body/{*}bodyContent/{*}sessionTicket' ).text
+            }
+
+def WebexGetUser( sessionSecurityContext, webExId ):
+
+    # Use f-string literal formatting to substitute {variables} into the XML template string
+    request = f'''<?xml version="1.0" encoding="UTF-8"?>
+        <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <header>
+                <securityContext>
+                    <siteName>{sessionSecurityContext[ 'siteName' ]}</siteName>
+                    <webExID>{sessionSecurityContext[ 'webExId' ]}</webExID>
+                    <sessionTicket>{sessionSecurityContext[ 'sessionTicket' ]}</sessionTicket>
                 </securityContext>
             </header>
             <body>
@@ -193,32 +240,32 @@ def WebexGetUser( siteName, webExId, webExAccessToken, debug = False):
         '''
 
     # Make the API request
-    response = sendWebexRequest( request, debug )
+    response = sendRequest( request, debug = True )
 
     # Return an object containing the security context info with sessionTicket
     return response
 
 # The Flask web app routes start below
 
-# This is the entry point of the app - navigate to https://localhost:5000/login to start
-@app.route('/login')
+# This is the entry point of the app - navigate to https://localhost:5000 to start
+@app.route('/')
 def login():
 
     # Create the URL pointing to the web app's /authorize endpoint
-    redirect_uri = url_for('authorize', _external=True)
+    redirect_uri = url_for( 'authorize', _external=True)
 
     # Use the URL as the destination to receive the auth code, and
     # kick-off the Authclient OAuth2 login flow
-    return webex_meetings.authorize_redirect(redirect_uri)
+    return oauth.webex.authorize_redirect( redirect_uri )
 
 # This URL handles receiving the auth code after the OAuth2 flow is complete
 @app.route('/authorize')
 def authorize():
 
     # Go ahead and exchange the auth code for the access token
-    # and store it in the user session object
+    # and store it in the Flask user session object
     try:
-        session[ 'token' ] = webex_meetings.authorize_access_token()
+        session[ 'token' ] = oauth.webex.authorize_access_token()
 
     except Exception as err:
 
@@ -228,26 +275,39 @@ def authorize():
 
         return response, 500        
 
-    url = furl( request.headers['Referer'] )
-
-    session[ 'siteName' ] = url.query.params[ 'site' ]
-
     # Now that we have the API access token, redirect the the URL for making a
     # Webex Meetings API GetUser request
-    return redirect(url_for('GetUser'), code='302')
+    return redirect( url_for( 'GetUser' ), code = '302' )
 
 # Make a Meetings API GetUser request and return the raw XML to the browser
 @app.route('/GetUser')
 def GetUser():
+
+    # Call AuthenticateUser to transform the Webex Teams access token into a 
+    # Webex Meetings session ticket
+    try:
+        sessionSecurityContext = WebexAuthenticateUser( 
+            os.getenv( 'SITENAME' ), 
+            os.getenv( 'WEBEXID' ), 
+            session[ 'token' ][ 'access_token' ]
+        )
+
+    except SendRequestError as err:
+
+        response = 'Error making AuthenticateUser request:<br>'
+        response += '<ul><li>Result: ' + err.result + '</li>'
+        response += '<li>Reason: ' + err.reason + '</li></ul>'
+
+        return response, 500
 
     # Call the function we created above, grabbing siteName and webExId from .env, and the
     # access_token from the token object in the session store
     try:
 
         reply = WebexGetUser(
-            session[ 'siteName' ],
-            os.getenv( 'WEBEXID_OAUTH' ), 
-            session[ 'token' ][ 'access_token' ], debug = False )
+            sessionSecurityContext,
+            os.getenv( 'WEBEXID' )
+        )
 
     except SendRequestError as err:
 
@@ -259,6 +319,7 @@ def GetUser():
 
     # Create a Flask Response object, with content of the pretty-printed XML text
     response = make_response( etree.tostring( reply, pretty_print = True, encoding = 'unicode' ) )
+    
     # Mark the response as XML via the Content-Type header
     response.headers[ 'Content-Type' ] = 'application/xml'
 
