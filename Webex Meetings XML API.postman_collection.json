@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "cf36258c-cf13-4121-9ee9-6f13be9853de",
+		"_postman_id": "ff384231-c299-4c5d-95f2-ce0d9033e4b8",
 		"name": "Webex Meetings XML API",
 		"description": "An collection of common Webex Meeting XML API requests.\n\nhttps://developer.cisco.com/webex-meetings/\n\nRequests can use Postman environment variables for common values to avoid updating each request manually.  E.g. create a Postman environment with the following variables populated from your Webex site/user:  SITE_NAME, WEBEXID, PASSWORD.  Select this environment as the current active environment, and you can execute individual requests - variable names with double curly braces will be inserted automatically.\n\nThe entire collection can be run sequentially, and as a Postman test suite.  Simply create an environment and populate as above, and use the Postman test runner against the root of the collection.  Dynamic values like sessionTicket and meetingkey will be extracted and used in subsequent requests.\n",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -10,7 +10,7 @@
 			"name": "User Service",
 			"item": [
 				{
-					"name": "AuthenticateUser",
+					"name": "AuthenticateUser (password)",
 					"event": [
 						{
 							"listen": "test",
@@ -52,7 +52,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n        <securityContext>\n          <siteName>{{SITE_NAME}}</siteName>\n          <webExID>{{WEBEXID}}</webExID>\n          <password>{{PASSWORD}}</password>  \n        </securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.user.AuthenticateUser\">\n        </bodyContent>\n    </body>\n</serv:message>\n"
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n        <securityContext>\n          <siteName>{{SITE_NAME}}</siteName>\n          <webExID>{{WEBEXID}}</webExID>\n          <password>{{PASSWORD}}</password>\n        </securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.user.AuthenticateUser\">\n        </bodyContent>\n    </body>\n</serv:message>\n"
 						},
 						"url": {
 							"raw": "https://api.webex.com/WBXService/XMLService",
@@ -111,7 +111,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n        <securityContext>\n          <siteName>{{SITE_NAME}}</siteName>\n          <webExID>{{WEBEXID}}</webExID>\n          <sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n        </securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.user.GetUser\">\n        \t<webExId>dstaudt</webExId>\n        </bodyContent>\n    </body>\n</serv:message>\n"
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n        <securityContext>\n          <siteName>{{SITE_NAME}}</siteName>\n          <webExID>{{WEBEXID}}</webExID>\n          <sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n        </securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.user.GetUser\">\n        \t<webExId>{{WEBEXID}}</webExId>\n        </bodyContent>\n    </body>\n</serv:message>\n"
 						},
 						"url": {
 							"raw": "https://api.webex.com/WBXService/XMLService",
@@ -246,8 +246,70 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "AuthenticateUser (access token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "820bda34-3944-4a4a-a89d-8da62f149c47",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"AuthenticateUser: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"AuthenticateUser: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"AuthenticateUser: SUCCESS\"] = true",
+									"        ",
+									"        pm.environment.set( \"_SESSION_TICKET\", jsonData['serv:message']['serv:body']['serv:bodyContent']['use:sessionTicket'] );",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n        <securityContext>\n          <siteName>{{SITE_NAME}}</siteName>\n          <webExID>{{WEBEXID}}</webExID>\n        </securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.user.AuthenticateUser\">\n        \t<accessToken>{{ACCESS_TOKEN}}</accessToken>\n        </bodyContent>\n    </body>\n</serv:message>\n"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "General Session Service",
@@ -311,7 +373,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Meeting Type Service",
@@ -375,7 +438,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Meeting Service",
@@ -643,7 +707,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
 			"name": "Meeting Attendee Service",
@@ -709,7 +774,75 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Site Service",
+			"item": [
+				{
+					"name": "GetSite",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "820bda34-3944-4a4a-a89d-8da62f149c47",
+								"exec": [
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"AuthenticateUser: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"AuthenticateUser: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"AuthenticateUser: SUCCESS\"] = true",
+									"        ",
+									"        pm.environment.set( \"_SESSION_TICKET\", jsonData['serv:message']['serv:body']['serv:bodyContent']['use:sessionTicket'] );",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<serv:message xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\"\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n    <header>\n        <securityContext>\n          <siteName>{{SITE_NAME}}</siteName>\n          <webExID>{{WEBEXID}}</webExID>\n          <sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n        </securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.site.GetSite\" />\n    </body>\n</serv:message>\n"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
 		}
 	],
 	"event": [
@@ -733,5 +866,6 @@
 				]
 			}
 		}
-	]
+	],
+	"protocolProfileBehavior": {}
 }
