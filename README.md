@@ -43,14 +43,14 @@ Samples built/tested using [Visual Studio Code](https://code.visualstudio.com/).
 
     On Windows, choose the option to add to PATH environment variable
 
-* Clone this repo:
+* From a terminal, clone this repo and change into the directory:
 
     ```bash
     git clone https://github.com/CiscoDevNet/webex-meetings-python-samples
     cd webex-meetings-python-samples
     ```
 
-* (Optional) Create a Python virtual environment named `env`:
+* (Optional but recommended) Create a Python virtual environment named `env`:
 
     (you may need to use `python3` on Linux/Mac):
 
@@ -81,7 +81,7 @@ Samples built/tested using [Visual Studio Code](https://code.visualstudio.com/).
 
         Select the sample you wish to run, e.g. 'Python: Launch sampleFlow.py`
 
-    1. See the comments in the individual samples for additional sample-specific setup/launch details
+    1. See comments in the individual samples for additional sample-specific setup/launch details
 
-    1. Click the green Launch button
+    1. Click the green **Start Debugging** button
 

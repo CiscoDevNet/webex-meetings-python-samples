@@ -24,7 +24,7 @@
 
 #   4. Generate the self-signed certificate used to serve the Flask web app with HTTPS.
 
-#      This requires OpenSSL tools be installed (the command below was used on Ubuntu 19.04.)
+#      This requires that OpenSSL tools are installed (the command below was used on Ubuntu 19.04.)
 
 #      From a terminal at the repo root:  
 
@@ -34,7 +34,7 @@
 
 #   1. Open the repo root folder with VS Code
 
-#   2. Edit .env as needed (see above)
+#   2. Rename/edit .env as needed (see above)
 
 #   3. Open the command palette (View/Command Palette), and find 'Python: select interpreter'
 
