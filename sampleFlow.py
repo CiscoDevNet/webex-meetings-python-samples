@@ -66,13 +66,12 @@ def sendRequest( envelope ):
         print( envelope )
 
     # Use the requests library to POST the XML envelope to the Webex API endpoint
-    headers = { 'Content-Type': 'application/xml'}
     response = requests.post( 'https://api.webex.com/WBXService/XMLService', envelope )
 
     # Check for HTTP errors
     try: 
         response.raise_for_status()
-    except requests.exceptions.HTTPError as err: 
+    except requests.exceptions.HTTPError: 
         raise SendRequestError( 'HTTP ' + str(response.status_code), response.content.decode("utf-8") )
 
     # Use the lxml ElementTree object to parse the response XML

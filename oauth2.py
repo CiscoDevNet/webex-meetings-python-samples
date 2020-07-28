@@ -1,11 +1,12 @@
 # Webex Meetings OAuth2 sample, demonstrating how to authenticate a
 # Webex Meetings OAuth user using Python + Authlib, then use the 
-# resulting access token to make a Meetings GetUser request
+# resulting access token to make a Meetings XML GetUser request
 
-# Note, this sample only works with Webex OAuth enabled sites;
+# Note, this sample only works with Webex OAuth enabled sites, and uses
+# the Webex Teams integration mechanism: https://developer.webex.com/docs/integrations
 
-#   https://api.webex.com/v1/oauth2/authorize
-#   https://api.webex.com/v1/oauth2/token
+#   https://webexapis.com/v1/authorize
+#   https://webexapis.com/v1/access_token
 #   GetUser
 
 # Configuration and setup:
@@ -74,7 +75,7 @@ import os
 
 # Edit .env file to specify your Webex integration client ID / secret
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv( override=True ) # Prefer variables in .env file
 
 # Change to true to enable request/response debug output
 DEBUG = False
@@ -123,9 +124,9 @@ oauth.register(
     name = 'webex',
     client_id = os.getenv( 'CLIENT_ID' ),
     client_secret = os.getenv( 'CLIENT_SECRET' ),
-    authorize_url = 'https://api.ciscospark.com/v1/authorize',
-    access_token_url = 'https://api.ciscospark.com/v1/access_token',
-    refresh_token_url = 'https://api.ciscospark.com/v1/authorize',
+    authorize_url = 'https://webexapis.com/v1/authorize',
+    access_token_url = 'https://webexapis.com/v1/access_token',
+    refresh_token_url = 'https://webexapis.com/v1/authorize',
     api_base_url = 'https://api.webex.com/WBXService/XMLService',
     client_kwargs = { 
         'scope': 'spark:all',
@@ -157,7 +158,7 @@ def sendRequest( envelope, debug = False ):
     headers = { 'Content-Type': 'application/xml'}
     response = oauth.webex.post( url = '', data = envelope, headers = headers )
 
-    if debug:
+    if DEBUG:
         print( response.request.headers )
         print( response.request.body )
 
@@ -171,7 +172,7 @@ def sendRequest( envelope, debug = False ):
     message = etree.fromstring( response.content )
 
     # If debug mode has been requested, pretty print the XML to console
-    if debug:
+    if DEBUG:
         print( response.headers )
         print( etree.tostring( message, pretty_print = True, encoding = 'unicode' ) )   
 
@@ -270,8 +271,8 @@ def authorize():
     except Exception as err:
 
         response = 'Error exchanging auth code for access token:<br>'
-        response += '<ul><li>Error: ' + err.error + '</li>'
-        response += '<li>Description: ' + err.description + '</li></ul>'
+        response += f'<ul><li>Error: HTTP { err.code } { err.name }</li>'
+        response += f'<li>Description: { err.description }</li></ul>'
 
         return response, 500        
 
@@ -283,12 +284,18 @@ def authorize():
 @app.route('/GetUser')
 def GetUser():
 
+    # Retrieve the WebExId of the user who logged in
+    resp = requests.get( 'https://webexapis.com/v1/people/me',
+                          headers = { 'Authorization': f'Bearer { session[ "token" ][ "access_token" ] }' } )
+
+    userId = resp.json()[ 'emails' ][ 0 ]
+
     # Call AuthenticateUser to transform the Webex Teams access token into a 
     # Webex Meetings session ticket
     try:
         sessionSecurityContext = WebexAuthenticateUser( 
             os.getenv( 'SITENAME' ), 
-            os.getenv( 'WEBEXID' ), 
+            userId, 
             session[ 'token' ][ 'access_token' ]
         )
 

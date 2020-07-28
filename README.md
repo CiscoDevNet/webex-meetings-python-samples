@@ -25,7 +25,7 @@ Samples built/tested using [Visual Studio Code](https://code.visualstudio.com/).
 
     Can use webExId/password or webExId/accessToken for authorization
 
-* `oauth2.py` - demonstrates a web application that can perform a Webex Meetings OAuth2 login (using [Authlib](https://github.com/lepture/authlib)), then perform a GetUser request
+* `oauth2.py` - demonstrates a web application that can perform a Webex Meetings OAuth2 login (using [Authlib](https://github.com/lepture/authlib)), then performs a GetUser request
 
 * `Postman collection - Webex Meetings XML API.json` - import this [Postman collection](https://learning.getpostman.com/docs/postman/collections/intro_to_collections/) which contains select scripted API request samples
 
@@ -50,13 +50,13 @@ Samples built/tested using [Visual Studio Code](https://code.visualstudio.com/).
     cd webex-meetings-python-samples
     ```
 
-* (Optional but recommended) Create a Python virtual environment named `env`:
+* (Optional but recommended) Create a Python virtual environment named `venv`:
 
     (you may need to use `python3` on Linux/Mac):
 
     ```bash
-    python -m venv env
-    source env/bin/activate
+    python -m venv venv
+    source venv/bin/activate
     ```
 
 * Dependency Installation (you may need to use `pip3` on Linux/Mac)

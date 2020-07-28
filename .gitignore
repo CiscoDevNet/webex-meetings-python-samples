@@ -3,4 +3,5 @@
 __pycache__/
 *.pem
 .env
-env/*
+venv/*
+.DS_Store
