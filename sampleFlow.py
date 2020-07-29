@@ -41,7 +41,7 @@ import os
 
 # Edit .env file to specify your Webex site/user details
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv( override=True ) # Prefer variables in .env file
 
 # Change to true to enable request/response debug output
 DEBUG = True
