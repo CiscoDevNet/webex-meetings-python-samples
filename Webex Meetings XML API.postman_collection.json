@@ -706,6 +706,67 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "GetjoinurlMeeting",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9de34cfe-a266-4424-b76a-2b8c4c81faea",
+								"exec": [
+									"postman.setNextRequest('LstMeetingAttendee');",
+									"",
+									"if (responseCode.code != 200) {",
+									"    ",
+									"    tests[\"GetMeeting: failed\"] = false",
+									"}",
+									"else {",
+									"    ",
+									"    jsonData = xml2Json(responseBody)",
+									"    ",
+									"    if ( jsonData['serv:message']['serv:header']['serv:response']['serv:result'] != 'SUCCESS') {",
+									"        ",
+									"        tests[\"GetMeeting: failed\"] = false",
+									"    }",
+									"    else {",
+									"        ",
+									"        tests[\"GetMeeting: SUCCESS\"] = true",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<serv:message\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n    xmlns:serv=\"http://www.webex.com/schemas/2002/06/service\">\n    <header>\n\t\t<securityContext>\n\t\t\t<siteName>{{SITE_NAME}}</siteName>\n\t\t\t<webExID>{{WEBEXID}}</webExID>\n\t\t\t<sessionTicket>{{_SESSION_TICKET}}</sessionTicket>  \n\t\t</securityContext>\n    </header>\n    <body>\n        <bodyContent xsi:type=\"java:com.webex.service.binding.meeting.GetjoinurlMeeting\">\n            <sessionKey>{{_MEETING_KEY}}</sessionKey>\n        </bodyContent>\n    </body>\n</serv:message>"
+						},
+						"url": {
+							"raw": "https://api.webex.com/WBXService/XMLService",
+							"protocol": "https",
+							"host": [
+								"api",
+								"webex",
+								"com"
+							],
+							"path": [
+								"WBXService",
+								"XMLService"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}

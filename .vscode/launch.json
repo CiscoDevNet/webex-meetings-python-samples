@@ -5,14 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: launch sampleFlow.py",
+            "name": "Launch sampleFlow.py",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/sampleFlow.py",
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: Launch oauth2.py",
+            "name": "Launch oauth2.py",
             "type": "python",
             "request": "launch",
             "module": "flask",
