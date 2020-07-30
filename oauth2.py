@@ -78,7 +78,7 @@ from dotenv import load_dotenv
 load_dotenv( override=True ) # Prefer variables in .env file
 
 # Change to true to enable request/response debug output
-DEBUG = False
+DEBUG = True
 
 # Instantiate the Flask application
 app = Flask(__name__)
@@ -119,17 +119,29 @@ def webex_compliance_fix( session ):
 # The client_kwargs sets the requested Webex Meetings integration scope
 # and the token_endpoint_auth_method to use when exchanging the auth code for the
 # access token
+
+if ( os.getenv( 'OAUTH_TYPE') == 'MEETINGS' ):
+    authUrl = 'https://api.webex.com/v1/oauth2/authorize'
+    tokenUrl = 'https://api.webex.com/v1/oauth2/token'
+    refreshUrl = 'https://api.ciscospark.com/v1/authorize'
+    scopes = 'all_read+user_modify+meeting_modify+recording_modify+setting_modify'
+else:
+    authUrl = 'https://api.ciscospark.com/v1/authorize'
+    tokenUrl = 'https://api.ciscospark.com/v1/access_token'
+    refreshUrl = 'https://api.webex.com/v1/oauth2/token'
+    scopes = 'spark:all'
+
 oauth.register(
 
     name = 'webex',
     client_id = os.getenv( 'CLIENT_ID' ),
     client_secret = os.getenv( 'CLIENT_SECRET' ),
-    authorize_url = 'https://webexapis.com/v1/authorize',
-    access_token_url = 'https://webexapis.com/v1/access_token',
-    refresh_token_url = 'https://webexapis.com/v1/authorize',
+    authorize_url = authUrl,
+    access_token_url = tokenUrl,
+    refresh_token_url = refreshUrl,
     api_base_url = 'https://api.webex.com/WBXService/XMLService',
     client_kwargs = { 
-        'scope': 'spark:all',
+        'scope': scopes,
         'token_endpoint_auth_method': 'client_secret_post' 
     },
     code_challenge_method = 'S256',
@@ -213,11 +225,7 @@ def WebexAuthenticateUser( siteName, webExId, accessToken ):
     response = sendRequest( request )
 
     # Return an object containing the security context info with sessionTicket
-    return {
-            'siteName': siteName,
-            'webExId': webExId,
-            'sessionTicket': response.find( '{*}body/{*}bodyContent/{*}sessionTicket' ).text
-            }
+    return response.find( '{*}body/{*}bodyContent/{*}sessionTicket' ).text
 
 def WebexGetUser( sessionSecurityContext, webExId ):
 
@@ -226,11 +234,7 @@ def WebexGetUser( sessionSecurityContext, webExId ):
         <serv:message xmlns:serv="http://www.webex.com/schemas/2002/06/service"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <header>
-                <securityContext>
-                    <siteName>{sessionSecurityContext[ 'siteName' ]}</siteName>
-                    <webExID>{sessionSecurityContext[ 'webExId' ]}</webExID>
-                    <sessionTicket>{sessionSecurityContext[ 'sessionTicket' ]}</sessionTicket>
-                </securityContext>
+                 { sessionSecurityContext }
             </header>
             <body>
                 <bodyContent xsi:type="java:com.webex.service.binding.user.GetUser">
@@ -256,7 +260,7 @@ def login():
     redirect_uri = url_for( 'authorize', _external=True)
 
     # Use the URL as the destination to receive the auth code, and
-    # kick-off the Authclient OAuth2 login flow
+    # kick-off the Authclient OAuth2 login flow/GetUser
     return oauth.webex.authorize_redirect( redirect_uri )
 
 # This URL handles receiving the auth code after the OAuth2 flow is complete
@@ -284,28 +288,38 @@ def authorize():
 @app.route('/GetUser')
 def GetUser():
 
-    # Retrieve the WebExId of the user who logged in
-    resp = requests.get( 'https://webexapis.com/v1/people/me',
-                          headers = { 'Authorization': f'Bearer { session[ "token" ][ "access_token" ] }' } )
+    if ( os.getenv( 'OAUTH_TYPE' ) == 'MEETINGS' ):
+        sessionSecurityContext = f'''
+            <securityContext>
+                <siteName>{ os.getenv( 'SITENAME' ) }</siteName>
+                <webExID>{ os.getenv( 'WEBEXID' ) }</webExID>
+                <webExAccessToken>{ session[ 'token' ][ 'access_token' ] }</webExAccessToken>
+            </securityContext>'''
 
-    userId = resp.json()[ 'emails' ][ 0 ]
+    else:
+        # Call AuthenticateUser to transform the Webex Teams access token into a 
+        # Webex Meetings session ticket
+        try:
+            sessionTicket = WebexAuthenticateUser(
+                os.getenv( 'SITENAME' ),
+                os.getenv( 'WEBEXID' ),
+                session[ 'token' ][ 'access_token' ]
+            )
 
-    # Call AuthenticateUser to transform the Webex Teams access token into a 
-    # Webex Meetings session ticket
-    try:
-        sessionSecurityContext = WebexAuthenticateUser( 
-            os.getenv( 'SITENAME' ), 
-            userId, 
-            session[ 'token' ][ 'access_token' ]
-        )
+            sessionSecurityContext = f'''
+                <securityContext>
+                    <siteName>{ os.getenv( 'SITENAME' ) }</siteName>
+                    <webExID>{ os.getenv( 'WEBEXID' ) }</webExID>
+                    <sessionTicket>{ sessionTicket }</sessionTicket>
+                </securityContext>'''
 
-    except SendRequestError as err:
+        except SendRequestError as err:
 
-        response = 'Error making AuthenticateUser request:<br>'
-        response += '<ul><li>Result: ' + err.result + '</li>'
-        response += '<li>Reason: ' + err.reason + '</li></ul>'
+            response = 'Error making AuthenticateUser request:<br>'
+            response += '<ul><li>Result: ' + err.result + '</li>'
+            response += '<li>Reason: ' + err.reason + '</li></ul>'
 
-        return response, 500
+            return response, 500
 
     # Call the function we created above, grabbing siteName and webExId from .env, and the
     # access_token from the token object in the session store

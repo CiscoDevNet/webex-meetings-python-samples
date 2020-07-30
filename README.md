@@ -25,7 +25,7 @@ Samples built/tested using [Visual Studio Code](https://code.visualstudio.com/).
 
     Can use webExId/password or webExId/accessToken for authorization
 
-* `oauth2.py` - demonstrates a web application that can perform a Webex Meetings OAuth2 login (using [Authlib](https://github.com/lepture/authlib)), then performs a GetUser request
+* `oauth2.py` - demonstrates a web application that can perform a Webex Meetings OAuth2 login (using [Authlib](https://github.com/lepture/authlib)), then performs a GetUser request.  Can use either [Webex Meetings OAuth](https://developer.cisco.com/docs/webex-meetings/#!integration) or [Webex Teams OAuth](https://developer.webex.com/docs/integrations) providers.
 
 * `Postman collection - Webex Meetings XML API.json` - import this [Postman collection](https://learning.getpostman.com/docs/postman/collections/intro_to_collections/) which contains select scripted API request samples
 

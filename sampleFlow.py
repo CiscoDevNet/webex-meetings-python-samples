@@ -9,11 +9,14 @@
 
 # Configuration and setup:
 
+# Configuration and setup:
+
 # * Edit .env to provide your Webex user credentials
 
-#   - For SSO/CI sites, provide the ACCESS_TOKEN (retrieve by logging in here: 
-#       https://developer.webex.com/docs/api/getting-started)
-#   - For non-SSO/CI sites, provide the PASSWORD
+#   - For Control Hub managed sites with SSO enabled, provide ACCESS_TOKEN as a 
+#       Webex Teams token (retrieve by logging in here:
+#       https://developer.webex.com/docs/api/getting-started )
+#   - For non-SSO-enabled sites, provide the PASSWORD
 
 #   If both are provided, the sample will attempt to use the ACCESS_TOKEN
 

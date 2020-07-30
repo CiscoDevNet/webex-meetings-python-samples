@@ -2,6 +2,7 @@
 !.vscode/launch.json
 __pycache__/
 *.pem
-.env
+.env*
+!.env.example
 venv/*
 .DS_Store
