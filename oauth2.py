@@ -2,30 +2,30 @@
 # Webex Meetings OAuth user using Python + Authlib, then use the 
 # resulting access token to make a Meetings XML GetUser request
 
-# Note, this sample only works with Webex OAuth enabled sites, and uses
-# the Webex Teams integration mechanism: https://developer.webex.com/docs/integrations
+# Note, this sample works with Webex OAuth enabled sites, and uses either:
 
-#   https://webexapis.com/v1/authorize
-#   https://webexapis.com/v1/access_token
-#   GetUser
+#   * Webex Teams integration mechanism
+#   * Webex Meetings integration mechanism
 
 # Configuration and setup:
 
-#   1. Edit .env with your Webex site name and the target Webex ID (user@email.com)
+#   1. Rename .env.example to .env, and edit with your Webex site name/target 
+#        Webex ID (user@email.com)
 
-#   2. Register a Webex Teams OAuth integration per the steps here: 
+#   2. Register a Webex Teams OAuth integration per the steps at:
 
-#        https://developer.webex.com/docs/integrations
-  
+#        * Webex Teams integration mechanism: https://developer.webex.com/docs/integrations
+#        * Webex Meetings integration mechanism: https://developer.cisco.com/docs/webex-meetings/#!integration
+
 #        Set the Redirect URL to: https://127.0.0.1:5000/authorize
 
-#        Select the 'spark:all' scope
+#        For Webex Teams integration, select the 'spark:all' scope
 
 #   3. Place the integration client_id and client_secret values into .env
 
 #   4. Generate the self-signed certificate used to serve the Flask web app with HTTPS.
 
-#      This requires that OpenSSL tools are installed (the command below was used on Ubuntu 19.04.)
+#      This requires that OpenSSL tools are installed (the command below was used on Ubuntu Linux 19.04.)
 
 #      From a terminal at the repo root:  
 
