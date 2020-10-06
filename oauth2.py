@@ -35,9 +35,7 @@
 
 #   1. Open the repo root folder with VS Code
 
-#   2. Rename/edit .env as needed (see above)
-
-#   3. Open the command palette (View/Command Palette), and find 'Python: select interpreter'
+#   2. Open the command palette (View/Command Palette), and find 'Python: select interpreter'
 
 #        Select the Python3 interpreter desired (e.g. a 'venv' environment)
 
@@ -77,8 +75,8 @@ import os
 from dotenv import load_dotenv
 load_dotenv( override=True ) # Prefer variables in .env file
 
-# Change to true to enable request/response debug output
-DEBUG = True
+# Enable Authlib and API request/response debug output in .env
+DEBUG = os.getenv('DEBUG_ENABLED') == 'True'
 
 # Instantiate the Flask application
 app = Flask(__name__)
@@ -130,6 +128,13 @@ else:
     tokenUrl = 'https://api.ciscospark.com/v1/access_token'
     refreshUrl = 'https://api.webex.com/v1/oauth2/token'
     scopes = 'spark:all'
+
+if DEBUG:
+    import logging
+    import sys
+    log = logging.getLogger('authlib')
+    log.addHandler(logging.StreamHandler(sys.stdout))
+    log.setLevel(logging.DEBUG)
 
 oauth.register(
 

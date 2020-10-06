@@ -46,8 +46,8 @@ import os
 from dotenv import load_dotenv
 load_dotenv( override=True ) # Prefer variables in .env file
 
-# Change to true to enable request/response debug output
-DEBUG = True
+# Enable Authlib and API request/response debug output in .env
+DEBUG = os.getenv('DEBUG_ENABLED') == 'True'
 
 # Once the user is authenticated, the sessionTicket for all API requests will be stored here
 sessionSecurityContext = { }
